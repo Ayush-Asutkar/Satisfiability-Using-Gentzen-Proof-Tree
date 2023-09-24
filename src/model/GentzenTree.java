@@ -15,10 +15,11 @@ public class GentzenTree {
         rightSide.add(expression);
 
         this.rootNode = new Node(leftSide, rightSide);
+        this.rootNode.stripLeftAndRightHandSide();
         this.leafNodes = new HashSet<>();
     }
 
-    public void algorithmForGentzenSystemCreateTree() {
+    public void applyAlgorithmForGentzenSystemCreateTree() {
         Queue<Node> unServedNodes = new ArrayDeque<>();
         unServedNodes.add(this.rootNode);
 
@@ -51,6 +52,7 @@ public class GentzenTree {
     }
 
     public void printTree() {
+        System.out.println("Following is the level order traversal: ");
         Queue<Node> q = new ArrayDeque<>();
         q.add(this.rootNode);
 
@@ -69,16 +71,26 @@ public class GentzenTree {
         }
     }
 
-    public boolean checkContradiction() {
-        boolean result = false;
+    public void printNodeWhichIsContradicting() {
+        System.out.println("Node which is contradicting: " + this.contradictingNode());
+    }
 
+    public boolean checkContradiction() {
+        return this.contradictingNode() != null;
+    }
+
+    /**
+     * Returns a leaf node which is contradicting
+     * @return non-contradicting leaf node
+     */
+    public Node contradictingNode() {
         for(Node node: this.leafNodes) {
             if(node.isContradiction()) {
-                result = true;
+                return node;
             }
         }
 
-        return result;
+        return null;
     }
 
     //for testing
@@ -113,7 +125,7 @@ public class GentzenTree {
         list.add("B");
 
         GentzenTree gentzenTree = new GentzenTree(list);
-        gentzenTree.algorithmForGentzenSystemCreateTree();
+        gentzenTree.applyAlgorithmForGentzenSystemCreateTree();
         System.out.println(gentzenTree.checkContradiction());
 
         gentzenTree.printTree();
