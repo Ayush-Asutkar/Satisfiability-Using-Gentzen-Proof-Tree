@@ -1,16 +1,19 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Node {
-    private String expression;
-    private String lhs;
-    private String rhs;
+    private final Set<List<String>> leftHandSide;
+    private final Set<List<String>> rightHandSide;
     private Node leftChild;
     private Node rightChild;
 
-    public Node(String expression) {
-        this.expression = expression;
+    public Node(Set<List<String>> leftHandSide, Set<List<String>> rightHandSide) {
+        this.leftHandSide = leftHandSide;
+        this.rightHandSide = rightHandSide;
         this.leftChild = null;
         this.rightChild = null;
     }
@@ -23,22 +26,65 @@ public class Node {
         this.rightChild = rightChild;
     }
 
-    public boolean isLeafNode() {
-        return false;
-    }
-
-    public boolean isContradiction() {
-        if(isLeafNode()) {
-            return true;
-        }
-        return false;
-    }
-
     public List<Node> getNewNodes() {
         return null;
     }
 
-    public String getExpression() {
-        return expression;
+    public boolean isLeafNode() {
+        for (List<String> left: this.leftHandSide) {
+            if(left.size() > 1) {
+                return false;
+            }
+        }
+
+        for (List<String> right: this.rightHandSide) {
+            if(right.size() > 1) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean isContradiction() {
+        if (isLeafNode()) {
+            for (List<String> left: this.leftHandSide) {
+                if(this.rightHandSide.contains(left)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Node{" +
+                "leftHandSide=" + leftHandSide +
+                ", rightHandSide=" + rightHandSide +
+                '}';
+    }
+
+    //for testing
+    public static void main(String[] args) {
+        List<String> leftList1 = new ArrayList<>();
+        leftList1.add("Alice");
+        List<String> leftList2 = new ArrayList<>();
+        leftList2.add("Bob");
+
+        List<String> rightList1 = new ArrayList<>();
+        rightList1.add("Bob");
+
+        Set<List<String>> right = new HashSet<>();
+        Set<List<String>> left = new HashSet<>();
+
+        left.add(leftList1);
+        left.add(leftList2);
+        right.add(rightList1);
+
+        Node node = new Node(left, right);
+        System.out.println(node);
+        System.out.println(node.isLeafNode());
+        System.out.println(node.isContradiction());
     }
 }
