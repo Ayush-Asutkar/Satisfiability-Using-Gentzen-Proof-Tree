@@ -1,59 +1,39 @@
 package constants;
 
-public enum StringOperators {
-    IMPLICATION(String.valueOf('\u2192')),
-    DOUBLE_IMPLICATION(String.valueOf('\u2194')),
-    DISJUNCTION(String.valueOf('\u22C0')),
-    CONJUNCTION(String.valueOf('\u22C1')),
-    NOT(String.valueOf('\u223C'));
-
-    private final String str;
-
-    StringOperators(String str) {
-        this.str = str;
-    }
+public class StringOperators {
+    public final static String IMPLICATION = String.valueOf('\u2192');
+    public final static String DOUBLE_IMPLICATION = String.valueOf('\u2194');
+    public final static String OR = String.valueOf('\u22C1');
+    public final static String AND = String.valueOf('\u22C0');
+    public final static String NEGATION = String.valueOf('\u223C');
 
     public static boolean isOperator(String str) {
-        StringOperators stringOperator = StringOperators.valueOf(str);
-
-        switch (stringOperator) {
-            case IMPLICATION:
-            case DOUBLE_IMPLICATION:
-            case DISJUNCTION:
-            case CONJUNCTION:
-            case NOT:
-                return true;
-
-            default:
-                return false;
+        if(str.equals(IMPLICATION)) {
+            return true;
+        } else if(str.equals(DOUBLE_IMPLICATION)) {
+            return true;
+        } else if(str.equals(OR)) {
+            return true;
+        } else if(str.equals(AND)) {
+            return true;
+        } else if(str.equals(NEGATION)) {
+            return true;
         }
+        return false;
     }
 
     public static int precedenceOfOperator(String operator) {
-        StringOperators constant = StringOperators.valueOf(operator);
-        switch (constant) {
-            case NOT:
-                return 1;
-
-            case DISJUNCTION:
-                return 2;
-
-            case CONJUNCTION:
-                return 3;
-
-            case IMPLICATION:
-                return 4;
-
-            case DOUBLE_IMPLICATION:
-                return 5;
-
-            default:
-                return -1;
+        if(operator.equals(NEGATION)) {
+            return 1;
+        } else if(operator.equals(OR)) {
+            return 2;
+        } else if(operator.equals(AND)) {
+            return 3;
+        } else if(operator.equals(IMPLICATION)) {
+            return 4;
+        } else if(operator.equals(DOUBLE_IMPLICATION)) {
+            return 5;
         }
-    }
-
-    @Override
-    public String toString() {
-        return this.str;
+        return -1;
     }
 }
