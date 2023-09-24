@@ -433,10 +433,7 @@ public class Node {
 
     @Override
     public String toString() {
-        return "Node{" +
-                "leftHandSide=" + leftHandSide +
-                ", rightHandSide=" + rightHandSide +
-                '}';
+        return leftHandSide + " \u21D2 " + rightHandSide;
     }
 
     //for testing
