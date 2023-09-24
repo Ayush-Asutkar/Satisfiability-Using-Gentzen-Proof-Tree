@@ -42,6 +42,14 @@ public class Node {
         this.rightChild = rightChild;
     }
 
+    public Node getLeftChild() {
+        return this.leftChild;
+    }
+
+    public Node getRightChild() {
+        return this.rightChild;
+    }
+
     public void stripLeftAndRightHandSide() {
         this.stripForSetList(this.leftHandSide);
         this.stripForSetList(this.rightHandSide);
