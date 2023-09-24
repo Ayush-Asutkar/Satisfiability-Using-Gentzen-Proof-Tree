@@ -1,5 +1,6 @@
 package model;
 
+import constants.Brackets;
 import constants.StringOperators;
 
 import java.util.*;
@@ -25,8 +26,96 @@ public class Node {
         this.rightChild = rightChild;
     }
 
+    public void stripLeftAndRightHandSide() {
+        this.stripForSetList(this.leftHandSide);
+        this.stripForSetList(this.rightHandSide);
+    }
+
+    private void stripForSetList(Set<List<String>> set) {
+        for(List<String> formula: set) {
+            boolean initialValueBracket = Brackets.isOpeningBracket(formula.get(0));
+            while (initialValueBracket) {
+                String initialSymbol = formula.get(0);
+                String correspondingClosingSymbolForInitialSymbol = Brackets.correspondingClosingBracket(initialSymbol);
+                int cnt = 1;
+
+
+                boolean needToRemove = false;
+                for(int i=1; i<formula.size(); i++) {
+                    String currSymbol = formula.get(i);
+                    if(currSymbol.equals(initialSymbol)) {
+                        cnt++;
+                    } else if(currSymbol.equals(correspondingClosingSymbolForInitialSymbol)) {
+                        cnt--;
+                    }
+
+                    if(cnt == 0) {
+                        if (i == (formula.size() - 1)) {
+                            needToRemove = true;
+                        }
+                        break;
+                    }
+                }
+
+                if(needToRemove) {
+                    formula.remove(0);
+                    formula.remove(formula.size() - 1);
+                } else {
+                    break;
+                }
+
+                initialValueBracket = Brackets.isOpeningBracket(formula.get(0));
+            }
+        }
+    }
+
     public List<Node> getNewNodes() {
+        List<Node> result = new ArrayList<>();
+
+        //loop on left
+        for(List<String> left: this.leftHandSide) {
+
+            int indexOfSplitting = this.splittingCharacterIndex(left);
+
+            if(indexOfSplitting < 0) {
+                //no splitting allowed
+            }
+            List<List<String>> brokenFormula = this.breakAFormulaIntoTwoPartsBasedOnIndex(left, indexOfSplitting);
+
+            String symbolOfBreaking = left.get(indexOfSplitting);
+
+
+            //  ((((((( A U B )))))))
+        }
+
+        //loop on right
         return null;
+    }
+
+    private List<Node> breakNodeForLeftSide() {
+        return null;
+    }
+
+    private List<Node> breakForRightSide() {
+        return null;
+    }
+
+    private List<List<String>> breakAFormulaIntoTwoPartsBasedOnIndex(List<String> formula, int index) {
+        List<String> beforeIndex = new ArrayList<>();
+        for(int i=0; i<index; i++) {
+            beforeIndex.add(formula.get(i));
+        }
+
+        List<String> afterIndex = new ArrayList<>();
+        for(int i=index+1; i<formula.size(); i++) {
+            afterIndex.add(formula.get(i));
+        }
+
+        List<List<String>> result = new ArrayList<>();
+        result.add(beforeIndex);
+        result.add(afterIndex);
+
+        return result;
     }
 
     /**
@@ -34,7 +123,7 @@ public class Node {
      * @param formula a list of string which is a particular formula
      * @return index of splitting character, -1 if can not be splitted
      */
-    private static int splittingCharacterIndex(List<String> formula) {
+    private int splittingCharacterIndex(List<String> formula) {
         //converting to postfix, and return the index of the last operator
         Stack<Integer> stack = new Stack<>();
 
@@ -109,50 +198,72 @@ public class Node {
     public static void main(String[] args) {
 //        List<String> list = new ArrayList<>();
 //        list.add("(");
-//        list.add("(");
 //        list.add("A");
-//        list.add(StringOperators.OR);
-//        list.add("P");
-//        list.add(")");
-//        list.add(StringOperators.AND);
-//        list.add("(");
-//        list.add("B");
-//        list.add(StringOperators.OR);
-//        list.add(StringOperators.NEGATION);
-//        list.add("P");
-//        list.add(")");
-//        list.add(")");
 //        list.add(StringOperators.IMPLICATION);
+//        list.add("B");
+//        list.add(")");
+//
+//        Set<List<String>> set = new HashSet<>();
+//        set.add(new ArrayList<>(list));
+//
+//        list.clear();
 //        list.add("(");
-//        list.add("A");
-//        list.add(StringOperators.OR);
-//        list.add("P");
+//        list.add("C");
+//        list.add(StringOperators.IMPLICATION);
+//        list.add("D");
+//        list.add(")");
+//        set.add(list);
+//
+//        list.clear();
+//        list.add("{");
+//        list.add("(");
+//        list.add("C");
+//        list.add(StringOperators.IMPLICATION);
+//        list.add("D");
+//        list.add(")");
+//        list.add("}");
+//        set.add(list);
+//
+//        list.clear();
+//        list.add("{");
+//        list.add("(");
+//        list.add("C");
+//        list.add(StringOperators.IMPLICATION);
+//        list.add("D");
+//        list.add("}");
+//        list.add(")");
+//        set.add(list);
+//
+//
+//        System.out.println(set);
+//        Node.stripForSetList(set);
+//        System.out.println(set);
+
+//
+//        for (List<String> formula: set) {
+//            System.out.println(formula);
+//            formula.remove(0);
+//            formula.add("EXIT");
+//        }
+//        System.out.println(set);
+
+//        List<String> list = new ArrayList<>();
+//        list.add("(");
+//        list.add("a");
+//        list.add(StringOperators.IMPLICATION);
+//        list.add("b");
 //        list.add(")");
 //        list.add(StringOperators.AND);
 //        list.add("(");
-//        list.add("B");
-//        list.add(StringOperators.OR);
-//        list.add(StringOperators.NEGATION);
-//        list.add("P");
+//        list.add("b");
+//        list.add(StringOperators.IMPLICATION);
+//        list.add("a");
 //        list.add(")");
-
-        List<String> list = new ArrayList<>();
-        list.add("(");
-        list.add("a");
-        list.add(StringOperators.IMPLICATION);
-        list.add("b");
-        list.add(")");
-        list.add(StringOperators.AND);
-        list.add("(");
-        list.add("b");
-        list.add(StringOperators.IMPLICATION);
-        list.add("a");
-        list.add(")");
-
-        System.out.println(list);
-        int result = splittingCharacterIndex(list);
-        System.out.println(result);
-        System.out.println(splittingCharacterIndex(list) + " : " + list.get(splittingCharacterIndex(list)));
+//
+//        System.out.println(list);
+//        int result = splittingCharacterIndex(list);
+//        System.out.println(result);
+//        System.out.println(splittingCharacterIndex(list) + " : " + list.get(splittingCharacterIndex(list)));
 
 //        List<String> leftList1 = new ArrayList<>();
 //        leftList1.add("Alice");
