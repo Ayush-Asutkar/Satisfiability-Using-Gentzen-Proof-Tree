@@ -12,8 +12,24 @@ public class Node {
     private Node rightChild;
 
     public Node(Set<List<String>> leftHandSide, Set<List<String>> rightHandSide) {
-        this.leftHandSide = leftHandSide;
-        this.rightHandSide = rightHandSide;
+        this.leftHandSide = new HashSet<>();
+        for(List<String> left: leftHandSide) {
+            if(left == null  ||  left.isEmpty()) {
+                continue;
+            } else {
+                this.leftHandSide.add(left);
+            }
+        }
+
+        this.rightHandSide = new HashSet<>();
+        for(List<String> right: rightHandSide) {
+            if(right == null  ||  right.isEmpty()) {
+                continue;
+            } else {
+                this.rightHandSide.add(right);
+            }
+        }
+
         this.leftChild = null;
         this.rightChild = null;
     }
@@ -70,34 +86,252 @@ public class Node {
     }
 
     public List<Node> getNewNodes() {
-        List<Node> result = new ArrayList<>();
-
         //loop on left
         for(List<String> left: this.leftHandSide) {
-
             int indexOfSplitting = this.splittingCharacterIndex(left);
 
             if(indexOfSplitting < 0) {
                 //no splitting allowed
+                continue;
             }
-            List<List<String>> brokenFormula = this.breakAFormulaIntoTwoPartsBasedOnIndex(left, indexOfSplitting);
 
-            String symbolOfBreaking = left.get(indexOfSplitting);
+            List<Node> result = breakNodeForLeftSide(left, indexOfSplitting);
 
+            assert result != null;
 
-            //  ((((((( A U B )))))))
+            for(Node node: result) {
+                node.stripLeftAndRightHandSide();
+            }
+            return result;
         }
 
         //loop on right
-        return null;
+        for(List<String> right: this.rightHandSide) {
+            int indexOfSplitting = this.splittingCharacterIndex(right);
+
+            if(indexOfSplitting < 0) {
+                //no splitting allowed
+                continue;
+            }
+
+            List<Node> result = breakForRightSide(right, indexOfSplitting);
+
+            assert result != null;
+
+            for(Node node: result) {
+                node.stripLeftAndRightHandSide();
+            }
+            return result;
+        }
+
+        //return empty list
+        return new ArrayList<>();
     }
 
-    private List<Node> breakNodeForLeftSide() {
-        return null;
+    private static Set<List<String>> deepCopyASetOfListOfString(Set<List<String>> input) {
+        Set<List<String>> result = new HashSet<>();
+        for(List<String> formula: input) {
+            result.add(new ArrayList<>(formula));
+        }
+        return result;
     }
 
-    private List<Node> breakForRightSide() {
-        return null;
+    private List<Node> breakNodeForLeftSide(List<String> left, int index) {
+        List<List<String>> brokenFormula = this.breakAFormulaIntoTwoPartsBasedOnIndex(left, index);
+        String symbolOnWhichBreaking = left.get(index);
+
+        if(symbolOnWhichBreaking.equals(StringOperators.IMPLICATION)) {
+            //create two different nodes
+            //      Lambda, A->B => delta
+            //     i)  Lambda, B => delta
+            //    ii)     Lambda => A, delta
+
+            //For first
+            Set<List<String>> newLeftSideFirst = deepCopyASetOfListOfString(this.leftHandSide);
+            newLeftSideFirst.remove(left);
+            newLeftSideFirst.add(brokenFormula.get(1));
+
+            Set<List<String>> newRightSideFirst = deepCopyASetOfListOfString(this.rightHandSide);
+            Node firstNode = new Node(newLeftSideFirst, newRightSideFirst);
+
+            //For second
+            Set<List<String>> newLeftSideSecond = deepCopyASetOfListOfString(this.leftHandSide);
+            newLeftSideSecond.remove(left);
+
+            Set<List<String>> newRightSecond = deepCopyASetOfListOfString(this.rightHandSide);
+            newRightSecond.add(brokenFormula.get(0));
+            Node secondNode = new Node(newLeftSideSecond, newRightSecond);
+
+            List<Node> nodeList = new ArrayList<>();
+            nodeList.add(firstNode);
+            nodeList.add(secondNode);
+
+            return nodeList;
+        } else if(symbolOnWhichBreaking.equals(StringOperators.AND)) {
+            //create one different nodes
+            //      Lambda, A and B => delta
+            //       Lambda, A, B   => delta
+
+            //Only one new Node
+            Set<List<String>> newLeftSide = deepCopyASetOfListOfString(this.leftHandSide);
+            newLeftSide.remove(left);
+            newLeftSide.add(brokenFormula.get(0));
+            newLeftSide.add(brokenFormula.get(1));
+
+            Set<List<String>> newRightSide = deepCopyASetOfListOfString(this.rightHandSide);
+
+            Node newNode = new Node(newLeftSide, newRightSide);
+
+            List<Node> listNode = new ArrayList<>();
+            listNode.add(newNode);
+
+            return listNode;
+        } else if(symbolOnWhichBreaking.equals(StringOperators.OR)) {
+            //create two different nodes
+            //      Lambda, A or B => delta
+            //     i)    Lambda, A => delta
+            //    ii)    Lambda, B => delta
+
+            //For first
+            Set<List<String>> newLeftSideFirst = deepCopyASetOfListOfString(this.leftHandSide);
+            newLeftSideFirst.remove(left);
+            newLeftSideFirst.add(brokenFormula.get(0));
+
+            Set<List<String>> newRightSideFirst = deepCopyASetOfListOfString(this.rightHandSide);
+            Node firstNode = new Node(newLeftSideFirst, newRightSideFirst);
+
+            //For second
+            Set<List<String>> newLeftSideSecond = deepCopyASetOfListOfString(this.leftHandSide);
+            newLeftSideSecond.remove(left);
+            newLeftSideSecond.add(brokenFormula.get(1));
+
+            Set<List<String>> newRightSecond = deepCopyASetOfListOfString(this.rightHandSide);
+            Node secondNode = new Node(newLeftSideSecond, newRightSecond);
+
+            List<Node> nodeList = new ArrayList<>();
+            nodeList.add(firstNode);
+            nodeList.add(secondNode);
+
+            return nodeList;
+        } else if(symbolOnWhichBreaking.equals(StringOperators.NEGATION)) {
+            //create one different nodes
+            //      Lambda, not A => delta
+            //            Lambda  => A, delta
+
+            assert brokenFormula.get(0).isEmpty();
+
+            //Only one new Node
+            Set<List<String>> newLeftSide = deepCopyASetOfListOfString(this.leftHandSide);
+            newLeftSide.remove(left);
+
+            Set<List<String>> newRightSide = deepCopyASetOfListOfString(this.rightHandSide);
+            newRightSide.add(brokenFormula.get(1));
+
+            Node newNode = new Node(newLeftSide, newRightSide);
+
+            List<Node> listNode = new ArrayList<>();
+            listNode.add(newNode);
+
+            return listNode;
+        } else {
+            return null;
+        }
+    }
+
+    private List<Node> breakForRightSide(List<String> right, int index) {
+        List<List<String>> brokenFormula = this.breakAFormulaIntoTwoPartsBasedOnIndex(right, index);
+        String symbolOnWhichBreaking = right.get(index);
+
+        if(symbolOnWhichBreaking.equals(StringOperators.IMPLICATION)) {
+            //create one different nodes
+            //      Lambda =>  A->B, delta
+            //   Lambda, A => B, delta
+
+            //Only one new Node
+            Set<List<String>> newLeftSide = deepCopyASetOfListOfString(this.leftHandSide);
+            newLeftSide.add(brokenFormula.get(0));
+
+            Set<List<String>> newRightSide = deepCopyASetOfListOfString(this.rightHandSide);
+            newRightSide.remove(right);
+            newRightSide.add(brokenFormula.get(1));
+
+            Node newNode = new Node(newLeftSide, newRightSide);
+
+            List<Node> listNode = new ArrayList<>();
+            listNode.add(newNode);
+
+            return listNode;
+        } else if(symbolOnWhichBreaking.equals(StringOperators.AND)) {
+            //create two different nodes
+            //        Lambda =>  A and B, delta
+            //     i) Lambda => A, delta
+            //    ii) Lambda => B, delta
+
+            //For first
+            Set<List<String>> newLeftSideFirst = deepCopyASetOfListOfString(this.leftHandSide);
+
+            Set<List<String>> newRightSideFirst = deepCopyASetOfListOfString(this.rightHandSide);
+            newRightSideFirst.remove(right);
+            newRightSideFirst.add(brokenFormula.get(0));
+
+            Node firstNode = new Node(newLeftSideFirst, newRightSideFirst);
+
+            //For second
+            Set<List<String>> newLeftSideSecond = deepCopyASetOfListOfString(this.leftHandSide);
+
+            Set<List<String>> newRightSecond = deepCopyASetOfListOfString(this.rightHandSide);
+            newRightSecond.remove(right);
+            newRightSecond.add(brokenFormula.get(1));
+
+            Node secondNode = new Node(newLeftSideSecond, newRightSecond);
+
+            List<Node> nodeList = new ArrayList<>();
+            nodeList.add(firstNode);
+            nodeList.add(secondNode);
+
+            return nodeList;
+        } else if(symbolOnWhichBreaking.equals(StringOperators.OR)) {
+            //create one different nodes
+            //      Lambda  => A or B, delta
+            //      Lambda  => A, B, delta
+
+            //Only one new Node
+            Set<List<String>> newLeftSide = deepCopyASetOfListOfString(this.leftHandSide);
+
+            Set<List<String>> newRightSide = deepCopyASetOfListOfString(this.rightHandSide);
+            newRightSide.remove(right);
+            newRightSide.add(brokenFormula.get(0));
+            newRightSide.add(brokenFormula.get(1));
+
+            Node newNode = new Node(newLeftSide, newRightSide);
+
+            List<Node> listNode = new ArrayList<>();
+            listNode.add(newNode);
+
+            return listNode;
+        } else if(symbolOnWhichBreaking.equals(StringOperators.NEGATION)) {
+            //create two different nodes
+            //      Lambda => not A, delta
+            //  Lambda, A  => delta
+
+            assert brokenFormula.get(0).isEmpty();
+
+            //Only one new Node
+            Set<List<String>> newLeftSide = deepCopyASetOfListOfString(this.leftHandSide);
+            newLeftSide.add(brokenFormula.get(1));
+
+            Set<List<String>> newRightSide = deepCopyASetOfListOfString(this.rightHandSide);
+            newRightSide.remove(right);
+
+            Node newNode = new Node(newLeftSide, newRightSide);
+
+            List<Node> listNode = new ArrayList<>();
+            listNode.add(newNode);
+
+            return listNode;
+        } else {
+            return null;
+        }
     }
 
     private List<List<String>> breakAFormulaIntoTwoPartsBasedOnIndex(List<String> formula, int index) {
@@ -152,8 +386,11 @@ public class Node {
             }
         }
 
+        if(!stack.isEmpty()) {
+            result = stack.peek();
+        }
         while (!stack.isEmpty()) {
-            result = stack.pop();
+            stack.pop();
         }
 
         return result;
@@ -196,6 +433,58 @@ public class Node {
 
     //for testing
     public static void main(String[] args) {
+        List<String> list = new ArrayList<>();
+        list.add("(");
+        list.add(StringOperators.NEGATION);
+        list.add("A");
+        list.add(StringOperators.OR);
+        list.add("B");
+        list.add(")");
+
+        Set<List<String>> leftSide = new HashSet<>();
+        leftSide.add(new ArrayList<>(list));
+
+        list.clear();
+        list.add("B");
+//        list.add("(");
+//        list.add("C");
+//        list.add(StringOperators.OR);
+//        list.add("D");
+//        list.add(")");
+
+        Set<List<String>> rightSide = new HashSet<>();
+        rightSide.add(new ArrayList<>(list));
+
+        Node node = new Node(leftSide, rightSide);
+        node.stripLeftAndRightHandSide();
+        System.out.println(node);
+        System.out.println(node.isContradiction());
+
+        List<Node> newNodes = node.getNewNodes();
+        for(Node n: newNodes) {
+            System.out.println(n);
+            System.out.println(n.isContradiction());
+        }
+
+        List<Node> newNodes2 = newNodes.get(1).getNewNodes();
+        System.out.println(newNodes2);
+        for(Node n: newNodes2) {
+            System.out.println(n);
+            System.out.println(n.isContradiction());
+        }
+
+
+
+//        List<String> list = new ArrayList<>();
+//        list.add("(");
+//        list.add("A");
+//        list.add(StringOperators.IMPLICATION);
+//        list.add("(");
+//        list.add("B");
+//        list.add(StringOperators.OR);
+//        list.add("C");
+//        list.add(")");
+//        list.add(")");
 //        List<String> list = new ArrayList<>();
 //        list.add("(");
 //        list.add("A");
@@ -212,7 +501,7 @@ public class Node {
 //        list.add(StringOperators.IMPLICATION);
 //        list.add("D");
 //        list.add(")");
-//        set.add(list);
+//        set.add(new ArrayList<>(list));
 //
 //        list.clear();
 //        list.add("{");
@@ -222,20 +511,11 @@ public class Node {
 //        list.add("D");
 //        list.add(")");
 //        list.add("}");
-//        set.add(list);
-//
-//        list.clear();
-//        list.add("{");
-//        list.add("(");
-//        list.add("C");
-//        list.add(StringOperators.IMPLICATION);
-//        list.add("D");
-//        list.add("}");
-//        list.add(")");
-//        set.add(list);
+//        set.add(new ArrayList<>(list));
 //
 //
 //        System.out.println(set);
+
 //        Node.stripForSetList(set);
 //        System.out.println(set);
 
