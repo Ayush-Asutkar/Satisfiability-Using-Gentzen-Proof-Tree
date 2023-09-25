@@ -144,11 +144,59 @@ public class Node {
         return result;
     }
 
+    private List<String> generateNewFormulaForDoubleImplication(List<String> first, List<String> second) {
+        List<String> firstImplicationFormula = new ArrayList<>();
+
+        firstImplicationFormula.addAll(new ArrayList<>(first));
+        firstImplicationFormula.add(StringOperators.IMPLICATION);
+        firstImplicationFormula.addAll(new ArrayList<>(second));
+
+        firstImplicationFormula = Brackets.appendBracketAtStartAndEnd(firstImplicationFormula);
+
+        List<String> secondImplicationFormula = new ArrayList<>();
+
+        secondImplicationFormula.addAll(new ArrayList<>(second));
+        secondImplicationFormula.add(StringOperators.IMPLICATION);
+        secondImplicationFormula.addAll(new ArrayList<>(first));
+
+        secondImplicationFormula = Brackets.appendBracketAtStartAndEnd(secondImplicationFormula);
+
+        List<String> result = new ArrayList<>();
+        result.addAll(firstImplicationFormula);
+        result.add(StringOperators.AND);
+        result.addAll(secondImplicationFormula);
+
+        result = Brackets.appendBracketAtStartAndEnd(result);
+
+        return result;
+    }
+
     private List<Node> breakNodeForLeftSide(List<String> left, int index) {
         List<List<String>> brokenFormula = this.breakAFormulaIntoTwoPartsBasedOnIndex(left, index);
         String symbolOnWhichBreaking = left.get(index);
 
-        if(symbolOnWhichBreaking.equals(StringOperators.IMPLICATION)) {
+        if(symbolOnWhichBreaking.equals(StringOperators.DOUBLE_IMPLICATION)) {
+            //create one different node
+            //                 Lambda, A <-> B => delta
+            //   i) Lambda, (A -> B)  and (B -> A) => delta
+
+            //Only one new Node
+            Set<List<String>> newLeftSide = deepCopyASetOfListOfString(this.leftHandSide);
+            newLeftSide.remove(left);
+
+            List<String> newFormula = this.generateNewFormulaForDoubleImplication(brokenFormula.get(0), brokenFormula.get(1));
+
+            newLeftSide.add(newFormula);
+
+            Set<List<String>> newRightSide = deepCopyASetOfListOfString(this.rightHandSide);
+
+            Node newNode = new Node(newLeftSide, newRightSide);
+
+            List<Node> listNode = new ArrayList<>();
+            listNode.add(newNode);
+
+            return listNode;
+        } else if(symbolOnWhichBreaking.equals(StringOperators.IMPLICATION)) {
             //create two different nodes
             //      Lambda, A->B => delta
             //     i)  Lambda, B => delta
@@ -250,7 +298,28 @@ public class Node {
         List<List<String>> brokenFormula = this.breakAFormulaIntoTwoPartsBasedOnIndex(right, index);
         String symbolOnWhichBreaking = right.get(index);
 
-        if(symbolOnWhichBreaking.equals(StringOperators.IMPLICATION)) {
+        if(symbolOnWhichBreaking.equals(StringOperators.DOUBLE_IMPLICATION)) {
+            //create one different node
+            //      Lambda => A <-> B, delta
+            //   i) Lambda => (A -> B)  and (B -> A), delta
+
+            //Only one new Node
+            Set<List<String>> newLeftSide = deepCopyASetOfListOfString(this.leftHandSide);
+
+            Set<List<String>> newRightSide = deepCopyASetOfListOfString(this.rightHandSide);
+            newRightSide.remove(right);
+
+            List<String> newFormula = this.generateNewFormulaForDoubleImplication(brokenFormula.get(0), brokenFormula.get(1));
+
+            newRightSide.add(newFormula);
+
+            Node newNode = new Node(newLeftSide, newRightSide);
+
+            List<Node> listNode = new ArrayList<>();
+            listNode.add(newNode);
+
+            return listNode;
+        } else if(symbolOnWhichBreaking.equals(StringOperators.IMPLICATION)) {
             //create one different nodes
             //      Lambda =>  A->B, delta
             //   Lambda, A => B, delta
@@ -442,7 +511,7 @@ public class Node {
         list.add("(");
         list.add(StringOperators.NEGATION);
         list.add("A");
-        list.add(StringOperators.OR);
+        list.add(StringOperators.DOUBLE_IMPLICATION);
         list.add("B");
         list.add(")");
 
@@ -463,20 +532,20 @@ public class Node {
         Node node = new Node(leftSide, rightSide);
         node.stripLeftAndRightHandSide();
         System.out.println(node);
-        System.out.println(node.isContradiction());
+//        System.out.println(node.isContradiction());
 
         List<Node> newNodes = node.getNewNodes();
         for(Node n: newNodes) {
             System.out.println(n);
             System.out.println(n.isContradiction());
         }
-
-        List<Node> newNodes2 = newNodes.get(1).getNewNodes();
-        System.out.println(newNodes2);
-        for(Node n: newNodes2) {
-            System.out.println(n);
-            System.out.println(n.isContradiction());
-        }
+//
+//        List<Node> newNodes2 = newNodes.get(1).getNewNodes();
+//        System.out.println(newNodes2);
+//        for(Node n: newNodes2) {
+//            System.out.println(n);
+//            System.out.println(n.isContradiction());
+//        }
 
 
 

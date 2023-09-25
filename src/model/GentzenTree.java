@@ -111,22 +111,29 @@ public class GentzenTree {
 //        list.add(")");
 
 
+//        List<String> list = new ArrayList<>();
+//        list.add("(");
+//        list.add("A");
+//        list.add(StringOperators.AND);
+//        list.add("(");
+//        list.add("A");
+//        list.add(StringOperators.IMPLICATION);
+//        list.add("B");
+//        list.add(")");
+//        list.add(")");
+//        list.add(StringOperators.IMPLICATION);
+//        list.add("B");
+
         List<String> list = new ArrayList<>();
         list.add("(");
         list.add("A");
-        list.add(StringOperators.AND);
-        list.add("(");
-        list.add("A");
-        list.add(StringOperators.IMPLICATION);
+        list.add(StringOperators.DOUBLE_IMPLICATION);
         list.add("B");
         list.add(")");
-        list.add(")");
-        list.add(StringOperators.IMPLICATION);
-        list.add("B");
 
         GentzenTree gentzenTree = new GentzenTree(list);
         gentzenTree.applyAlgorithmForGentzenSystemCreateTree();
-        System.out.println(gentzenTree.checkContradiction());
+        System.out.println("Contradiction: " + gentzenTree.checkContradiction());
 
         gentzenTree.printTree();
     }
