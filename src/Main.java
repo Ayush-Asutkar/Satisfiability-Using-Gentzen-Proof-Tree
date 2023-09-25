@@ -49,6 +49,9 @@ public class Main {
         System.out.println("Contradiction at any leaf node: " + gentzenTree.checkContradiction());
         if(gentzenTree.checkContradiction()) {
             gentzenTree.printNodeWhichIsContradicting();
+            System.out.println("The given expression is satisfiable");
+        } else {
+            System.out.println("The given expression is not satisfiable");
         }
     }
 }
