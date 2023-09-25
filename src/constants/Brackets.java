@@ -45,10 +45,12 @@ public class Brackets {
     }
 
     public static List<String> appendBracketAtStartAndEnd(List<String> list, String bracket) {
+        assert isOpeningBracket(bracket);
+
         List<String> result = new ArrayList<>();
         result.add(bracket);
         result.addAll(list);
-        result.add(bracket);
+        result.add(correspondingClosingBracket(bracket));
         return result;
     }
 }
