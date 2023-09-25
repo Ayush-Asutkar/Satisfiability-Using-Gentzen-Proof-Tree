@@ -1,5 +1,8 @@
 package constants;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Brackets {
     public final static String ROUND_OPENING = "(";
     public final static String ROUND_CLOSING = ")";
@@ -31,5 +34,21 @@ public class Brackets {
         }
 
         return null;
+    }
+
+    public static List<String> appendBracketAtStartAndEnd(List<String> list) {
+        List<String> result = new ArrayList<>();
+        result.add(ROUND_OPENING);
+        result.addAll(list);
+        result.add(ROUND_CLOSING);
+        return result;
+    }
+
+    public static List<String> appendBracketAtStartAndEnd(List<String> list, String bracket) {
+        List<String> result = new ArrayList<>();
+        result.add(bracket);
+        result.addAll(list);
+        result.add(bracket);
+        return result;
     }
 }
