@@ -22,7 +22,7 @@ public class StringOperators {
         return false;
     }
 
-    public static int precedenceOfOperator(String operator) {
+    public static int reversePrecedenceOfOperator(String operator) {
         if(operator.equals(NEGATION)) {
             return 1;
         } else if(operator.equals(OR)) {

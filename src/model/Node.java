@@ -446,8 +446,8 @@ public class Node {
             //check if the symbol is an operator
             if(StringOperators.isOperator(symbol)) {
                 while (!stack.isEmpty()  &&
-                        (StringOperators.precedenceOfOperator(symbol)
-                                <= StringOperators.precedenceOfOperator(formula.get(stack.peek())))) {
+                        (StringOperators.reversePrecedenceOfOperator(symbol)
+                                <= StringOperators.reversePrecedenceOfOperator(formula.get(stack.peek())))) {
                     result = stack.peek();
                     stack.pop();
                 }
