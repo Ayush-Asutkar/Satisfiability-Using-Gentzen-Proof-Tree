@@ -2,6 +2,7 @@ package model;
 
 import constants.StringOperators;
 
+import javax.swing.*;
 import java.util.*;
 
 public class GentzenTree {
@@ -60,6 +61,26 @@ public class GentzenTree {
             Node curr = q.poll();
             System.out.println(curr);
             System.out.println();
+
+            if(curr.getLeftChild() != null) {
+                q.add(curr.getLeftChild());
+            }
+
+            if(curr.getRightChild() != null) {
+                q.add(curr.getRightChild());
+            }
+        }
+    }
+
+    public void printTreeToJTextArea(JTextArea message) {
+        message.setText("");
+        message.append("Following is the level order traversal:\n");
+        Queue<Node> q = new ArrayDeque<>();
+        q.add(this.rootNode);
+
+        while(!q.isEmpty()) {
+            Node curr = q.poll();
+            message.append(curr + "\n\n");
 
             if(curr.getLeftChild() != null) {
                 q.add(curr.getLeftChild());
