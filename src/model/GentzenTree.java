@@ -2,6 +2,9 @@ package model;
 
 import constants.StringOperators;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 public class GentzenTree {
@@ -69,6 +72,72 @@ public class GentzenTree {
                 q.add(curr.getRightChild());
             }
         }
+    }
+
+    private Map<Node, Integer> computeNodeIndexingInLevelOrderManner(Node rootNode) {
+        HashMap<Node, Integer> map = new HashMap<>();
+        Queue<Node> q = new ArrayDeque<>();
+        q.add(rootNode);
+
+        int index = 0;
+        while(!q.isEmpty()) {
+            Node curr = q.poll();
+            map.put(curr, index++);
+
+            if(curr.getLeftChild() != null) {
+                q.add(curr.getLeftChild());
+            }
+
+            if(curr.getRightChild() != null) {
+                q.add(curr.getRightChild());
+            }
+        }
+
+        return map;
+    }
+
+    private void printIndexOfNodesToFile(BufferedWriter writer, Map<Node, Integer> map) throws IOException {
+        for (Map.Entry<Node, Integer> entry: map.entrySet()) {
+            Node node = entry.getKey();
+            int index = entry.getValue();
+
+            writer.write("    A" + index + " [label = \"" + node + "\"];\n");
+        }
+    }
+
+    private void writeEdgeToFile(Node parent, Node child, BufferedWriter writer, Map<Node, Integer> mapOfNodeIndex) throws IOException {
+        int parentIndex = mapOfNodeIndex.get(parent);
+        int childIndex = mapOfNodeIndex.get(child);
+        writer.write("    A" + parentIndex + " -> A" + childIndex + ";\n");
+    }
+
+    public void printTreeToGraphvizFile(String path) throws IOException {
+        Map<Node, Integer> mapOfNodeIndex = computeNodeIndexingInLevelOrderManner(this.rootNode);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+
+        writer.write("digraph G{\n");
+
+        printIndexOfNodesToFile(writer, mapOfNodeIndex);
+
+        Queue<Node> q = new ArrayDeque<>();
+        q.add(this.rootNode);
+
+        while(!q.isEmpty()) {
+            Node curr = q.poll();
+
+            if(curr.getLeftChild() != null) {
+                q.add(curr.getLeftChild());
+                writeEdgeToFile(curr, curr.getLeftChild(), writer, mapOfNodeIndex);
+            }
+
+            if(curr.getRightChild() != null) {
+                q.add(curr.getRightChild());
+                writeEdgeToFile(curr, curr.getRightChild(), writer, mapOfNodeIndex);
+            }
+        }
+
+        writer.write("}\n");
+        writer.close();
     }
 
     public void printNodeWhichIsContradicting() {
